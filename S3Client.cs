@@ -88,7 +88,7 @@ namespace SimpleAWS
             if (parameters.Length <= 1)
                 parameters = null;
             
-            var wRequest = CreateRequest("GET", "text/plain", request.BucketName, request.Delimiter, parameters);
+            var wRequest = CreateRequest("GET", "text/plain", request.BucketName, Util.UrlEncode(request.Delimiter, true), parameters);
 
             using (var response = wRequest.GetResponse() as HttpWebResponse)
             using (var stream = response.GetResponseStream())
@@ -109,7 +109,7 @@ namespace SimpleAWS
 
         private S3Response DoDownloadFile(string bucket, string key)
         {
-            var wRequest = CreateRequest("GET", "text/plain", bucket, key.StartsWith("/") ? key : "/" + key, null);
+            var wRequest = CreateRequest("GET", "text/plain", bucket, Util.UrlEncode(key.StartsWith("/") ? key : "/" + key, true), null);
 
             using (var response = wRequest.GetResponse())
             using (var stream = response.GetResponseStream())
@@ -126,7 +126,7 @@ namespace SimpleAWS
         {
             var data = UTF8Encoding.UTF8.GetBytes(body);
 
-            var request = CreateRequest("PUT", "text/plain", bucket, key.StartsWith("/") ? key : "/" + key, null);
+            var request = CreateRequest("PUT", "text/plain", bucket, Util.UrlEncode(key.StartsWith("/") ? key : "/" + key, true), null);
 
             request.ContentLength = data.Length;
 

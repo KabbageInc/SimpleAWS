@@ -65,7 +65,7 @@ namespace SimpleAWS
                 }
             }
 
-            lParams.Sort();
+            lParams.Sort(StringComparer.Ordinal);
 
             string parameters = string.Format("AWSAccessKeyId={0}&Action={1}{2}&SignatureMethod={3}&SignatureVersion={4}&Timestamp={5}&Version={6}",
                 Util.UrlEncode(AccessKey),
@@ -106,7 +106,7 @@ namespace SimpleAWS
                 lParams.Add(string.Format("&InstanceId.{0}={1}", i + 1, Util.UrlEncode(request.InstanceIds[i])));
             }
 
-            lParams.Sort();
+            lParams.Sort(StringComparer.Ordinal);
 
             string parameters = string.Format("AWSAccessKeyId={0}&Action={1}{2}&SignatureMethod={3}&SignatureVersion={4}&Timestamp={5}&Version={6}",
                 Util.UrlEncode(AccessKey),
@@ -183,7 +183,7 @@ namespace SimpleAWS
             lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
             lParams.Add(string.Format("&Version={0}", "2012-07-20"));
 
-            lParams.Sort();
+            lParams.Sort(StringComparer.Ordinal);
 
             string parameters = string.Format("AWSAccessKeyId={0}&Action={1}{2}",
                 Util.UrlEncode(AccessKey),
