@@ -12,6 +12,8 @@ namespace SimpleAWS
 {
     public class Util
     {
+        public const string ValidUrlCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~";
+
         public static T RetryMethod<T>(Func<T> function, int retryCount)
         {
             int trys = 0;
@@ -85,11 +87,27 @@ namespace SimpleAWS
             return maxDelayInSeconds < delayInSeconds ? maxDelayInSeconds : (int)delayInSeconds;
         }
 
-        public static string UrlEncode(string data)
+        public static string UrlEncode(string data, bool path = false)
         {
-            data = HttpUtility.UrlEncode(data);
-            Regex reg = new Regex(@"%[a-f0-9]{2}");
-            return reg.Replace(data, m => m.Value.ToUpperInvariant());
+            StringBuilder encoded = new StringBuilder(data.Length * 2);
+            string unreservedChars = String.Concat(
+                Util.ValidUrlCharacters,
+                (path ? "/:" : "")
+                );
+
+            foreach (char symbol in System.Text.Encoding.UTF8.GetBytes(data))
+            {
+                if (unreservedChars.IndexOf(symbol) != -1)
+                {
+                    encoded.Append(symbol);
+                }
+                else
+                {
+                    encoded.Append('%').Append(String.Format("{0:X2}", (int)symbol));
+                }
+            }
+
+            return encoded.ToString();
         }
     }
 }

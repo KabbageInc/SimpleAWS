@@ -64,6 +64,13 @@ namespace SimpleAWS
 
             List<string> lParams = new List<string>();
 
+            lParams.Add(string.Format("&AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
+            lParams.Add(string.Format("&Action={0}", "SendMessageBatch"));
+            lParams.Add(string.Format("&SignatureMethod={0}", "HmacSHA256"));
+            lParams.Add(string.Format("&SignatureVersion={0}", "2"));
+            lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
+            lParams.Add(string.Format("&Version={0}", "2012-11-05"));
+
             for (int i = 0; i < request.Entries.Count; i++)
             {
                 lParams.Add(string.Format("&SendMessageBatchRequestEntry.{0}.Id={1}", i + 1, Util.UrlEncode(request.Entries[i].Id)));
@@ -71,16 +78,10 @@ namespace SimpleAWS
                 lParams.Add(string.Format("&SendMessageBatchRequestEntry.{0}.MessageBody={1}", i + 1, Util.UrlEncode(request.Entries[i].MessageBody)));
             }
 
-            lParams.Sort();
+            lParams.Sort(StringComparer.Ordinal);
 
-            string parameters = string.Format("AWSAccessKeyId={0}&Action={1}{2}&SignatureMethod={3}&SignatureVersion={4}&Timestamp={5}&Version={6}",
-                Util.UrlEncode(AccessKey),
-                "SendMessageBatch",
-                string.Join("", lParams),
-                "HmacSHA256",
-                "2",
-                Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")),
-                "2012-11-05");
+            var parameters = string.Join("", lParams);
+            parameters = parameters.Substring(1);
 
             string sig = Util.GetSignature(request.QueueUrl, "GET", parameters, SecretKey);
             parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
@@ -105,15 +106,21 @@ namespace SimpleAWS
 
         private SendMessageResponse DoSendMessage(SendMessageRequest request)
         {
-            string parameters = string.Format("AWSAccessKeyId={0}&Action={1}&DelaySeconds={2}&MessageBody={3}&SignatureMethod={4}&SignatureVersion={5}&Timestamp={6}&Version={7}",
-                Util.UrlEncode(AccessKey),
-                "SendMessage",
-                request.DelaySeconds,
-                Util.UrlEncode(request.MessageBody),
-                "HmacSHA256",
-                "2",
-                Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")),
-                "2012-11-05");
+            List<string> lParams = new List<string>();
+
+            lParams.Add(string.Format("&AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
+            lParams.Add(string.Format("&Action={0}", "SendMessage"));
+            lParams.Add(string.Format("&DelaySeconds={0}", request.DelaySeconds));
+            lParams.Add(string.Format("&MessageBody={0}", Util.UrlEncode(request.MessageBody)));
+            lParams.Add(string.Format("&SignatureMethod={0}", "HmacSHA256"));
+            lParams.Add(string.Format("&SignatureVersion={0}", "2"));
+            lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
+            lParams.Add(string.Format("&Version={0}", "2012-11-05"));
+
+            lParams.Sort(StringComparer.Ordinal);
+
+            var parameters = string.Join("", lParams);
+            parameters = parameters.Substring(1);
 
             string sig = Util.GetSignature(request.QueueUrl, "GET", parameters, SecretKey);
             parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
@@ -138,14 +145,20 @@ namespace SimpleAWS
 
         private DeleteMessageResponse DoDeleteMessage(string queueUrl, string receiptHandle)
         {
-            string parameters = string.Format("AWSAccessKeyId={0}&Action={1}&ReceiptHandle={2}&SignatureMethod={3}&SignatureVersion={4}&Timestamp={5}&Version={6}",
-                Util.UrlEncode(AccessKey),
-                "DeleteMessage",
-                Util.UrlEncode(receiptHandle),
-                "HmacSHA256",
-                "2",
-                Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")),
-                "2012-11-05");
+            List<string> lParams = new List<string>();
+
+            lParams.Add(string.Format("&AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
+            lParams.Add(string.Format("&Action={0}", "DeleteMessage"));
+            lParams.Add(string.Format("&ReceiptHandle={0}", Util.UrlEncode(receiptHandle)));
+            lParams.Add(string.Format("&SignatureMethod={0}", "HmacSHA256"));
+            lParams.Add(string.Format("&SignatureVersion={0}", "2"));
+            lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
+            lParams.Add(string.Format("&Version={0}", "2012-11-05"));
+
+            lParams.Sort(StringComparer.Ordinal);
+
+            var parameters = string.Join("", lParams);
+            parameters = parameters.Substring(1);
 
             string sig = Util.GetSignature(queueUrl, "GET", parameters, SecretKey);
             parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
@@ -170,16 +183,22 @@ namespace SimpleAWS
 
         private ReceiveMessageResponse DoReceiveMessage(ReceiveMessageRequest request)
         {
-            string parameters = string.Format("AWSAccessKeyId={0}&Action={1}&MaxNumberOfMessages={2}&SignatureMethod={3}&SignatureVersion={4}&Timestamp={5}&Version={6}&VisibilityTimeout={7}&WaitTimeSeconds={8}",
-                Util.UrlEncode(AccessKey),
-                "ReceiveMessage",
-                request.MaxNumberOfMessages,
-                "HmacSHA256",
-                "2",
-                Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")),
-                "2012-11-05",
-                request.VisibilityTimeout,
-                request.WaitTimeSeconds);
+            List<string> lParams = new List<string>();
+
+            lParams.Add(string.Format("&AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
+            lParams.Add(string.Format("&Action={0}", "ReceiveMessage"));
+            lParams.Add(string.Format("&MaxNumberOfMessages={0}", request.MaxNumberOfMessages));
+            lParams.Add(string.Format("&SignatureMethod={0}", "HmacSHA256"));
+            lParams.Add(string.Format("&SignatureVersion={0}", "2"));
+            lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
+            lParams.Add(string.Format("&Version={0}", "2012-11-05"));
+            lParams.Add(string.Format("&VisibilityTimeout={0}", request.VisibilityTimeout));
+            lParams.Add(string.Format("&WaitTimeSeconds={0}", request.WaitTimeSeconds));
+
+            lParams.Sort(StringComparer.Ordinal);
+
+            var parameters = string.Join("", lParams);
+            parameters = parameters.Substring(1);
 
             string sig = Util.GetSignature(request.QueueUrl, "GET", parameters, SecretKey);
             parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
@@ -206,21 +225,22 @@ namespace SimpleAWS
         {
             List<string> lParams = new List<string>();
 
+            lParams.Add(string.Format("&AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
+            lParams.Add(string.Format("&Action={0}", "GetQueueAttributes"));
+            lParams.Add(string.Format("&SignatureMethod={0}", "HmacSHA256"));
+            lParams.Add(string.Format("&SignatureVersion={0}", "2"));
+            lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
+            lParams.Add(string.Format("&Version={0}", "2012-11-05"));
+
             for (int i = 0; i < request.AttributeNames.Count; i++)
             {
                 lParams.Add(string.Format("&AttributeName.{0}={1}", i + 1, Util.UrlEncode(request.AttributeNames[i])));
             }
 
-            lParams.Sort();
+            lParams.Sort(StringComparer.Ordinal);
 
-            string parameters = string.Format("AWSAccessKeyId={0}&Action={1}{2}&SignatureMethod={3}&SignatureVersion={4}&Timestamp={5}&Version={6}",
-                Util.UrlEncode(AccessKey),
-                "GetQueueAttributes",
-                string.Join("", lParams),
-                "HmacSHA256",
-                "2",
-                Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")),
-                "2012-11-05");
+            var parameters = string.Join("", lParams);
+            parameters = parameters.Substring(1);
 
             string sig = Util.GetSignature(request.QueueUrl, "GET", parameters, SecretKey);
             parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
