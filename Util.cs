@@ -89,6 +89,9 @@ namespace SimpleAWS
 
         public static string UrlEncode(string data, bool path = false)
         {
+            if (data == null)
+                return data;
+
             StringBuilder encoded = new StringBuilder(data.Length * 2);
             string unreservedChars = String.Concat(
                 Util.ValidUrlCharacters,
