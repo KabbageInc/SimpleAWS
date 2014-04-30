@@ -53,6 +53,13 @@ namespace SimpleAWS
         {
             List<string> lParams = new List<string>();
 
+            lParams.Add(string.Format("&AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
+            lParams.Add(string.Format("&Action={0}", "DescribeInstances"));
+            lParams.Add(string.Format("&SignatureMethod={0}", "HmacSHA256"));
+            lParams.Add(string.Format("&SignatureVersion={0}", "2"));
+            lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
+            lParams.Add(string.Format("&Version={0}", "2012-07-20"));
+
             for (int i = 0; i < request.Filters.Count; i++)
             {
                 var filter = request.Filters[i];
@@ -67,14 +74,8 @@ namespace SimpleAWS
 
             lParams.Sort(StringComparer.Ordinal);
 
-            string parameters = string.Format("AWSAccessKeyId={0}&Action={1}{2}&SignatureMethod={3}&SignatureVersion={4}&Timestamp={5}&Version={6}",
-                Util.UrlEncode(AccessKey),
-                "DescribeInstances",
-                string.Join("", lParams),
-                "HmacSHA256",
-                "2",
-                Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")),
-                "2012-07-20");
+            var parameters = string.Join("", lParams);
+            parameters = parameters.Substring(1);
 
             string sig = Util.GetSignature(URL, "GET", parameters, SecretKey);
             parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
@@ -101,6 +102,13 @@ namespace SimpleAWS
         {
             List<string> lParams = new List<string>();
 
+            lParams.Add(string.Format("&AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
+            lParams.Add(string.Format("&Action={0}", "TerminateInstances"));
+            lParams.Add(string.Format("&SignatureMethod={0}", "HmacSHA256"));
+            lParams.Add(string.Format("&SignatureVersion={0}", "2"));
+            lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
+            lParams.Add(string.Format("&Version={0}", "2012-07-20"));
+
             for (int i = 0; i < request.InstanceIds.Count; i++)
             {
                 lParams.Add(string.Format("&InstanceId.{0}={1}", i + 1, Util.UrlEncode(request.InstanceIds[i])));
@@ -108,14 +116,8 @@ namespace SimpleAWS
 
             lParams.Sort(StringComparer.Ordinal);
 
-            string parameters = string.Format("AWSAccessKeyId={0}&Action={1}{2}&SignatureMethod={3}&SignatureVersion={4}&Timestamp={5}&Version={6}",
-                Util.UrlEncode(AccessKey),
-                "TerminateInstances",
-                string.Join("", lParams),
-                "HmacSHA256",
-                "2",
-                Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")),
-                "2012-07-20");
+            var parameters = string.Join("", lParams);
+            parameters = parameters.Substring(1);
 
             string sig = Util.GetSignature(URL, "GET", parameters, SecretKey);
             parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
@@ -178,6 +180,8 @@ namespace SimpleAWS
                 }
             }
 
+            lParams.Add(string.Format("&AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
+            lParams.Add(string.Format("&Action={0}", "RunInstances"));
             lParams.Add(string.Format("&SignatureMethod={0}", "HmacSHA256"));
             lParams.Add(string.Format("&SignatureVersion={0}", "2"));
             lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
@@ -185,10 +189,8 @@ namespace SimpleAWS
 
             lParams.Sort(StringComparer.Ordinal);
 
-            string parameters = string.Format("AWSAccessKeyId={0}&Action={1}{2}",
-                Util.UrlEncode(AccessKey),
-                "RunInstances",
-                string.Join("", lParams));
+            var parameters = string.Join("", lParams);
+            parameters = parameters.Substring(1);
 
             string sig = Util.GetSignature(URL, "GET", parameters, SecretKey);
             parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
