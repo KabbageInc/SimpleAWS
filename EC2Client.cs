@@ -39,9 +39,9 @@ namespace SimpleAWS
             return Util.RetryMethod<DescribeInstancesResponse>(() => DoDescribeInstances(request), RetryCount);
         }
 
-        public TerminateInstancesResponse TerminateInstances(TerminateInstancesRequest request)
+        public void TerminateInstances(TerminateInstancesRequest request)
         {
-            return Util.RetryMethod<TerminateInstancesResponse>(() => DoTerminateInstances(request), RetryCount);
+            Util.RetryMethod(() => DoTerminateInstances(request), RetryCount);
         }
 
         public RunInstancesResponse RunInstances(RunInstancesRequest request)
@@ -53,29 +53,28 @@ namespace SimpleAWS
         {
             List<string> lParams = new List<string>();
 
-            lParams.Add(string.Format("&AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
-            lParams.Add(string.Format("&Action={0}", "DescribeInstances"));
-            lParams.Add(string.Format("&SignatureMethod={0}", "HmacSHA256"));
-            lParams.Add(string.Format("&SignatureVersion={0}", "2"));
-            lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
-            lParams.Add(string.Format("&Version={0}", "2012-07-20"));
+            lParams.Add(string.Format("AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
+            lParams.Add(string.Format("Action={0}", "DescribeInstances"));
+            lParams.Add(string.Format("SignatureMethod={0}", "HmacSHA256"));
+            lParams.Add(string.Format("SignatureVersion={0}", "2"));
+            lParams.Add(string.Format("Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
+            lParams.Add(string.Format("Version={0}", "2012-07-20"));
 
             for (int i = 0; i < request.Filters.Count; i++)
             {
                 var filter = request.Filters[i];
 
-                lParams.Add(string.Format("&Filter.{0}.Name={1}", i + 1, Util.UrlEncode(filter.Name)));
+                lParams.Add(string.Format("Filter.{0}.Name={1}", i + 1, Util.UrlEncode(filter.Name)));
 
                 for (int a = 0; a < filter.Values.Count; a++)
                 {
-                    lParams.Add(string.Format("&Filter.{0}.Value.{1}={2}", i + 1, a + 1, Util.UrlEncode(filter.Values[a])));
+                    lParams.Add(string.Format("Filter.{0}.Value.{1}={2}", i + 1, a + 1, Util.UrlEncode(filter.Values[a])));
                 }
             }
 
             lParams.Sort(StringComparer.Ordinal);
 
-            var parameters = string.Join("", lParams);
-            parameters = parameters.Substring(1);
+            var parameters = string.Join("&", lParams);
 
             string sig = Util.GetSignature(URL, "GET", parameters, SecretKey);
             parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
@@ -98,51 +97,63 @@ namespace SimpleAWS
             }
         }
 
-        public TerminateInstancesResponse DoTerminateInstances(TerminateInstancesRequest request)
+        public void DoTerminateInstances(TerminateInstancesRequest request)
         {
-            List<string> lParams = new List<string>();
+            int PostMessageSize = 9;
 
-            lParams.Add(string.Format("&AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
-            lParams.Add(string.Format("&Action={0}", "TerminateInstances"));
-            lParams.Add(string.Format("&SignatureMethod={0}", "HmacSHA256"));
-            lParams.Add(string.Format("&SignatureVersion={0}", "2"));
-            lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
-            lParams.Add(string.Format("&Version={0}", "2012-07-20"));
-
-            for (int i = 0; i < request.InstanceIds.Count; i++)
+            for (var i = 0; i < request.InstanceIds.Count; i += PostMessageSize)
             {
-                lParams.Add(string.Format("&InstanceId.{0}={1}", i + 1, Util.UrlEncode(request.InstanceIds[i])));
-            }
+                List<string> chunk = request.InstanceIds.Skip(i).Take(PostMessageSize).ToList();
 
-            lParams.Sort(StringComparer.Ordinal);
+                List<string> lParams = new List<string>();
 
-            var parameters = string.Join("", lParams);
-            parameters = parameters.Substring(1);
+                lParams.Add(string.Format("AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
+                lParams.Add(string.Format("Action={0}", "TerminateInstances"));
+                lParams.Add(string.Format("SignatureMethod={0}", "HmacSHA256"));
+                lParams.Add(string.Format("SignatureVersion={0}", "2"));
+                lParams.Add(string.Format("Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
+                lParams.Add(string.Format("Version={0}", "2012-07-20"));
 
-            string sig = Util.GetSignature(URL, "GET", parameters, SecretKey);
-            parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
+                for (int a = 0; a < chunk.Count; a++)
+                {
+                    lParams.Add(string.Format("InstanceId.{0}={1}", a + 1, Util.UrlEncode(chunk[a])));
+                }
 
-            var wRequest = WebRequest.Create(string.Format("{0}?{1}", URL, parameters)) as HttpWebRequest;
-            wRequest.Method = "GET";
-            wRequest.ContentType = "application/x-www-form-urlencoded";
-            wRequest.KeepAlive = false;
+                lParams.Sort(StringComparer.Ordinal);
 
-            using (var response = wRequest.GetResponse() as HttpWebResponse)
-            using (var stream = response.GetResponseStream())
-            using (var reader = new StreamReader(stream))
-            {
-                var body = reader.ReadToEnd();
-                var element = XElement.Parse(body);
+                var parameters = string.Join("&", lParams);
 
-                XmlSerializer serializer = new XmlSerializer(typeof(TerminateInstancesResponse));
-                var terminateInstancesResponse = (TerminateInstancesResponse)serializer.Deserialize(element.CreateReader());
-                return terminateInstancesResponse;
+                string sig = Util.GetSignature(URL, "GET", parameters, SecretKey);
+                parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
+
+                var wRequest = WebRequest.Create(string.Format("{0}?{1}", URL, parameters)) as HttpWebRequest;
+                wRequest.Method = "GET";
+                wRequest.ContentType = "application/x-www-form-urlencoded";
+                wRequest.KeepAlive = false;
+
+                using (var response = wRequest.GetResponse() as HttpWebResponse)
+                using (var stream = response.GetResponseStream())
+                using (var reader = new StreamReader(stream))
+                {
+                    var body = reader.ReadToEnd();
+                    var element = XElement.Parse(body);
+
+                    XmlSerializer serializer = new XmlSerializer(typeof(TerminateInstancesResponse));
+                    var terminateInstancesResponse = (TerminateInstancesResponse)serializer.Deserialize(element.CreateReader());
+                }
             }
         }
 
         public RunInstancesResponse DoRunInstances(RunInstancesRequest request)
         {
             List<string> lParams = new List<string>();
+
+            lParams.Add(string.Format("AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
+            lParams.Add(string.Format("Action={0}", "RunInstances"));
+            lParams.Add(string.Format("SignatureMethod={0}", "HmacSHA256"));
+            lParams.Add(string.Format("SignatureVersion={0}", "2"));
+            lParams.Add(string.Format("Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
+            lParams.Add(string.Format("Version={0}", "2012-07-20"));
 
             var propValues = typeof(RunInstancesRequest).GetProperties();
 
@@ -166,7 +177,7 @@ namespace SimpleAWS
                             value = att.Name;
                         }
 
-                        lParams.Add(string.Format("&{0}={1}", propValues[i].Name, Util.UrlEncode(value.ToString())));
+                        lParams.Add(string.Format("{0}={1}", propValues[i].Name, Util.UrlEncode(value.ToString())));
                     }
                 }
                 else if (propValues[i].PropertyType == typeof(List<string>))
@@ -175,22 +186,14 @@ namespace SimpleAWS
 
                     for (int a = 0; a < value.Count; a++)
                     {
-                        lParams.Add(string.Format("&{0}.{1}={2}", propValues[i].Name, a + 1, Util.UrlEncode(value[a])));
+                        lParams.Add(string.Format("{0}.{1}={2}", propValues[i].Name, a + 1, Util.UrlEncode(value[a])));
                     }
                 }
             }
 
-            lParams.Add(string.Format("&AWSAccessKeyId={0}", Util.UrlEncode(AccessKey)));
-            lParams.Add(string.Format("&Action={0}", "RunInstances"));
-            lParams.Add(string.Format("&SignatureMethod={0}", "HmacSHA256"));
-            lParams.Add(string.Format("&SignatureVersion={0}", "2"));
-            lParams.Add(string.Format("&Timestamp={0}", Util.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))));
-            lParams.Add(string.Format("&Version={0}", "2012-07-20"));
-
             lParams.Sort(StringComparer.Ordinal);
 
-            var parameters = string.Join("", lParams);
-            parameters = parameters.Substring(1);
+            var parameters = string.Join("&", lParams);
 
             string sig = Util.GetSignature(URL, "GET", parameters, SecretKey);
             parameters = string.Format("{0}&Signature={1}", parameters, Util.UrlEncode(sig));
